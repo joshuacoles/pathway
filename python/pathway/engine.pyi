@@ -736,6 +736,7 @@ class DataStorage:
     mock_events: dict[tuple[str, int], list[SnapshotEvent]] | None
     table_name: str | None
     column_names: list[str] | None
+    sqlite_custom_sql_query: str | None
     def __init__(self, *args, **kwargs): ...
 
 class CsvParserSettings:
