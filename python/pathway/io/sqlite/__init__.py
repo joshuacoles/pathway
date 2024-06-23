@@ -23,6 +23,7 @@ def read(
     *,
     autocommit_duration_ms: int | None = 1500,
     debug_data: Any = None,
+    custom_query: str | None = None,
 ) -> Table:
     """Reads a table from a rowid table in `SQLite <https://www.sqlite.org/>`_ database.
 
@@ -51,6 +52,7 @@ def read(
         table_name=table_name,
         column_names=schema.column_names(),
         mode=api.ConnectorMode.STREAMING,
+        sqlite_custom_sql_query=custom_query,
     )
     data_format = api.DataFormat(
         format_type="transparent",
