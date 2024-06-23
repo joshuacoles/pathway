@@ -22,6 +22,8 @@ use crate::helpers::assert_error_shown_for_reader_context;
 use crate::helpers::ErrorPlacement;
 use crate::helpers::ReplaceErrors;
 
+// TODO: Test custom SQL query
+
 #[test]
 fn test_sqlite_read_table() -> eyre::Result<()> {
     let connection = SqliteConnection::open_with_flags(
@@ -34,7 +36,7 @@ fn test_sqlite_read_table() -> eyre::Result<()> {
         "price".to_string(),
         "photo".to_string(),
     ];
-    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names);
+    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names, None);
     let mut read_results = Vec::new();
     loop {
         let entry = reader.read()?;
@@ -114,7 +116,7 @@ fn test_sqlite_read_table_with_parser() -> eyre::Result<()> {
             InnerSchemaField::new(Type::Bytes, true, None),
         ),
     ]);
-    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names.clone());
+    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names.clone(), None);
     let mut parser = TransparentParser::new(None, value_field_names, schema, SessionType::Native);
 
     let mut parsed_events: Vec<ParsedEvent> = Vec::new();
@@ -187,7 +189,7 @@ fn test_sqlite_read_table_nonparsable() -> eyre::Result<()> {
             InnerSchemaField::new(Type::Bytes, false, None),
         ),
     ]);
-    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names.clone());
+    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names.clone(), None);
     let parser = TransparentParser::new(None, value_field_names, schema, SessionType::Native);
 
     reader.read()?;

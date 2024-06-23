@@ -3463,6 +3463,7 @@ pub struct DataStorage {
     header_fields: Vec<(String, usize)>,
     key_field_index: Option<usize>,
     min_commit_frequency: Option<u64>,
+    sqlite_custom_sql_query: Option<String>,
 }
 
 #[pyclass(module = "pathway.engine", frozen, name = "PersistenceMode")]
@@ -3773,6 +3774,7 @@ impl DataStorage {
         header_fields = Vec::new(),
         key_field_index = None,
         min_commit_frequency = None,
+        sqlite_custom_sql_query = None,
     ))]
     #[allow(clippy::too_many_arguments)]
     fn new(
@@ -3798,6 +3800,7 @@ impl DataStorage {
         header_fields: Vec<(String, usize)>,
         key_field_index: Option<usize>,
         min_commit_frequency: Option<u64>,
+        sqlite_custom_sql_query: Option<String>,
     ) -> Self {
         DataStorage {
             storage_type,
@@ -3822,6 +3825,7 @@ impl DataStorage {
             header_fields,
             key_field_index,
             min_commit_frequency,
+            sqlite_custom_sql_query,
         }
     }
 }
@@ -4174,7 +4178,8 @@ impl DataStorage {
         let column_names = self.column_names.clone().ok_or_else(|| {
             PyValueError::new_err("For Sqlite connector, column_names should be specified")
         })?;
-        let reader = SqliteReader::new(connection, table_name, column_names);
+        let custom_sql_query = self.sqlite_custom_sql_query.clone();
+        let reader = SqliteReader::new(connection, table_name, column_names, custom_sql_query);
         Ok((Box::new(reader), 1))
     }
 

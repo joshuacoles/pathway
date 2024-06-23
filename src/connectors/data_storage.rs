@@ -2524,6 +2524,10 @@ pub struct SqliteReader {
     table_name: String,
     column_names: Vec<String>,
 
+    /// A custom SQL query to fetch data from the table, should have the rowid as the *last* column
+    /// returned from the query.
+    custom_sql: Option<String>,
+
     last_saved_data_version: Option<i64>,
     stored_state: HashMap<i64, ValuesMap>,
     queued_updates: VecDeque<ReadResult>,
@@ -2534,11 +2538,13 @@ impl SqliteReader {
         connection: SqliteConnection,
         table_name: String,
         column_names: Vec<String>,
+        custom_sql: Option<String>,
     ) -> Self {
         Self {
             connection,
             table_name,
             column_names,
+            custom_sql,
 
             last_saved_data_version: None,
             queued_updates: VecDeque::new(),
@@ -2560,11 +2566,11 @@ impl SqliteReader {
     }
 
     fn load_table(&mut self) -> Result<(), ReadError> {
-        let query = format!(
+        let query = self.custom_sql.clone().unwrap_or_else(|| format!(
             "SELECT {},_rowid_ FROM {}",
             self.column_names.join(","),
             self.table_name
-        );
+        ));
 
         let mut statement = self.connection.prepare(&query)?;
         let mut rows = statement.query([])?;
