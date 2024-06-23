@@ -22,8 +22,6 @@ use crate::helpers::assert_error_shown_for_reader_context;
 use crate::helpers::ErrorPlacement;
 use crate::helpers::ReplaceErrors;
 
-// TODO: Test custom SQL query
-
 #[test]
 fn test_sqlite_read_table() -> eyre::Result<()> {
     let connection = SqliteConnection::open_with_flags(
@@ -72,6 +70,70 @@ fn test_sqlite_read_table() -> eyre::Result<()> {
                         ("id".to_owned(), Value::Int(2)),
                         ("name".to_owned(), Value::String("Bread".into())),
                         ("price".to_owned(), Value::Float(0.75.into())),
+                        ("photo".to_owned(), Value::Bytes(Arc::new([0, 0])))
+                    ])
+                    .into(),
+                )),
+                EMPTY_OFFSET
+            ),
+            ReadResult::FinishedSource {
+                commit_allowed: true
+            }
+        ]
+    );
+    Ok(())
+}
+
+#[test]
+fn test_sqlite_read_table_with_custom_sql() -> eyre::Result<()> {
+    let connection = SqliteConnection::open_with_flags(
+        "tests/data/sqlite/goods_test.db",
+        SqliteOpenFlags::SQLITE_OPEN_READ_ONLY,
+    )?;
+    let value_field_names = vec![
+        "id".to_string(),
+        "new_name".to_string(),
+        "photo".to_string(),
+        "twice_price".to_string(),
+    ];
+    let mut reader = SqliteReader::new(connection, "goods".to_string(), value_field_names, Some(
+        "SELECT id, name as new_name, photo, price * 2 as twice_price, _rowid_ FROM goods".to_string(),
+    ));
+    let mut read_results = Vec::new();
+    loop {
+        let entry = reader.read()?;
+        let is_last_entry = matches!(entry, ReadResult::FinishedSource { .. });
+        read_results.push(entry);
+        if is_last_entry {
+            break;
+        }
+    }
+    assert_eq!(
+        read_results,
+        vec![
+            ReadResult::NewSource(None),
+            ReadResult::Data(
+                ReaderContext::Diff((
+                    DataEventType::Insert,
+                    Some(vec![Value::Int(1)]),
+                    HashMap::from([
+                        ("id".to_owned(), Value::Int(1)),
+                        ("new_name".to_owned(), Value::String("Milk".into())),
+                        ("twice_price".to_owned(), Value::Float((2 * 1.1).into())),
+                        ("photo".to_owned(), Value::None)
+                    ])
+                    .into(),
+                )),
+                EMPTY_OFFSET
+            ),
+            ReadResult::Data(
+                ReaderContext::Diff((
+                    DataEventType::Insert,
+                    Some(vec![Value::Int(2)]),
+                    HashMap::from([
+                        ("id".to_owned(), Value::Int(2)),
+                        ("new_name".to_owned(), Value::String("Bread".into())),
+                        ("twice_price".to_owned(), Value::Float((2 * 0.75).into())),
                         ("photo".to_owned(), Value::Bytes(Arc::new([0, 0])))
                     ])
                     .into(),
