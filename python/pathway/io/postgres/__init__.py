@@ -20,6 +20,7 @@ def write(
     postgres_settings: dict,
     table_name: str,
     max_batch_size: int | None = None,
+    column_mapping: dict[str, str] | None = None,
 ) -> None:
     """Writes ``table``'s stream of updates to a postgres table.
 
@@ -31,6 +32,8 @@ def write(
         table_name: Name of the target table.
         max_batch_size: Maximum number of entries allowed to be committed within a \
 single transaction.
+        column_mapping: Mapping of the table columns to the target table columns, \
+if the names differ.
 
     Returns:
         None
@@ -98,7 +101,7 @@ single transaction.
     data_format = api.DataFormat(
         format_type="sql",
         key_field_names=[],
-        value_fields=_format_output_value_fields(table),
+        value_fields=_format_output_value_fields(table, column_mapping),
         table_name=table_name,
     )
 
