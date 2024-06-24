@@ -33,7 +33,11 @@ def read(
         schema: Schema of the resulting table.
         custom_query: A custom SQL query to be executed. If provided, the table will be
             created from the result of this query. The query should return a table with
-            columns for each column of the schema, plus an additional `_rowid_` column.
+            columns for each column of the schema, plus an additional `_rowid_` column
+            containing the rowid, note that if the table has an "integer primary key"
+            the default name of the _rowid_ expression will be the name of the "integer
+            primary key" column and thus using the syntax `_rowid_ as _rowid_` is
+            suggested.
         autocommit_duration_ms: The maximum time between two commits. Every
             autocommit_duration_ms milliseconds, the updates received by the connector are
             committed and pushed into Pathway's computation graph.
