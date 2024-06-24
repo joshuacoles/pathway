@@ -127,12 +127,13 @@ def is_s3_path(path: str) -> bool:
     return False
 
 
-def _format_output_value_fields(table: Table) -> list[api.ValueField]:
+def _format_output_value_fields(table: Table, column_mappings: dict[str, str] = None) -> list[api.ValueField]:
     value_fields = []
     for column_name, column_data in table._columns.items():
+        output_name = (column_mappings.get(column_name) or column_name) if column_mappings is not None else column_name
         value_fields.append(
             api.ValueField(
-                column_name,
+                output_name,
                 column_data.dtype.to_engine(),
             )
         )
