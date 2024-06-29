@@ -1647,11 +1647,17 @@ impl Formatter for PsqlSnapshotFormatter {
             .key_field_positions
             .iter()
             .map(|position| {
+                let rhs = if let Some(custom_expression) = self.custom_expressions.get(&self.key_field_names[*position]) {
+                    custom_expression.replace("$?", &format!("${}", position + 1))
+                } else {
+                    format!("${}", position + 1)
+                };
+
                 format!(
                     "{}.{}=${}",
                     self.table_name,
                     self.value_field_names[*position],
-                    *position + 1
+                    rhs,
                 )
             })
             .join(" AND ");
@@ -1662,13 +1668,14 @@ impl Formatter for PsqlSnapshotFormatter {
             .map(|field_name| format!("{field_name}=excluded.{field_name}"))
             .join(",");
 
-        let insert_values = (1..=values.len())
-            .format_with(",", |x, f| {
-                if let Some(custom_expression) = self.custom_expressions.get(&self.value_field_names[x - 1]) {
-                    let substituted = custom_expression.replace("$?", &format!("${}", x));
+        let insert_values = (0..values.len())
+            .format_with(",", |field_index, f| {
+                let pg_index = field_index + 1;
+                if let Some(custom_expression) = self.custom_expressions.get(&self.value_field_names[field_index]) {
+                    let substituted = custom_expression.replace("$?", &format!("${}", pg_index));
                     f(&substituted)
                 } else {
-                    f(&format_args!("${x}"))
+                    f(&format_args!("${pg_index}"))
                 }
             });
 
