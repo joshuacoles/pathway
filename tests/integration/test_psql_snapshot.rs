@@ -20,6 +20,7 @@ fn test_psql_format_snapshot_command() -> eyre::Result<()> {
             "value_bool".to_string(),
             "value_float".to_string(),
         ],
+        None
     );
 
     let result = formatter?.format(
@@ -54,6 +55,7 @@ fn test_psql_primary_key_unspecified() -> eyre::Result<()> {
             "value_bool".to_string(),
             "value_float".to_string(),
         ],
+        None
     );
     assert_matches!(formatter, Err(PsqlSnapshotFormatterError::UnknownKey(key)) if key == "key");
     Ok(())
@@ -70,6 +72,7 @@ fn test_psql_format_snapshot_composite() -> eyre::Result<()> {
             "value_bool".to_string(),
             "value_float".to_string(),
         ],
+        None
     );
 
     let result = formatter?.format(

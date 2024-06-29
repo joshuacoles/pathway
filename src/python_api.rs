@@ -3933,6 +3933,7 @@ pub struct DataFormat {
     session_type: SessionType,
     value_field_index: Option<usize>,
     key_generation_policy: KeyGenerationPolicy,
+    postgres_custom_insert_expressions: Option<HashMap<String, String>>
 }
 
 #[pymethods]
@@ -4028,6 +4029,7 @@ impl DataFormat {
         session_type = SessionType::Native,
         value_field_index = None,
         key_generation_policy = KeyGenerationPolicy::PreferMessageKey,
+        postgres_custom_insert_expressions = None,
     ))]
     #[allow(clippy::too_many_arguments)]
     fn new(
@@ -4043,6 +4045,7 @@ impl DataFormat {
         session_type: SessionType,
         value_field_index: Option<usize>,
         key_generation_policy: KeyGenerationPolicy,
+        postgres_custom_insert_expressions: Option<HashMap<String, String>>,
     ) -> Self {
         DataFormat {
             format_type,
@@ -4057,6 +4060,7 @@ impl DataFormat {
             session_type,
             value_field_index,
             key_generation_policy,
+            postgres_custom_insert_expressions,
         }
     }
 }
@@ -4703,6 +4707,7 @@ impl DataFormat {
                         .clone()
                         .ok_or_else(|| PyValueError::new_err("Primary key must be specified"))?,
                     self.value_field_names(py),
+                    self.postgres_custom_insert_expressions.clone(),
                 );
                 match maybe_formatter {
                     Ok(formatter) => Ok(Box::new(formatter)),
