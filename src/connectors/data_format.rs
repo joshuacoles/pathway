@@ -1676,7 +1676,7 @@ impl Formatter for PsqlSnapshotFormatter {
             result,
             "INSERT INTO {table} ({insert_columns}, time, diff)\
             VALUES ({insert_values}, {time}, {diff})\
-            ON CONFLICT DO UPDATE SET {on_conflict_update}, time={time}, diff={diff}
+            ON CONFLICT ({on_conflict_keys}) DO UPDATE SET {on_conflict_update}, time={time}, diff={diff}
             WHERE {update_condition} AND ({table}.time<{time} OR ({table}.time={time} AND {table}.diff=-1))
             ",
             table=self.table_name,
@@ -1684,6 +1684,7 @@ impl Formatter for PsqlSnapshotFormatter {
             insert_values=insert_values,
             time=time,
             diff=diff,
+            on_conflict_keys=self.key_field_names.iter().join(","),
             on_conflict_update=update_pairs,
             update_condition=update_condition,
         ).unwrap();
