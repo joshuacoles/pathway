@@ -21,6 +21,7 @@ def write(
     table_name: str,
     max_batch_size: int | None = None,
     column_mapping: dict[str, str] | None = None,
+    postgres_custom_insert_expressions: dict[str, str] | None = None,
 ) -> None:
     """Writes ``table``'s stream of updates to a postgres table.
 
@@ -103,6 +104,7 @@ if the names differ.
         key_field_names=[],
         value_fields=_format_output_value_fields(table, column_mapping),
         table_name=table_name,
+        postgres_custom_insert_expressions=postgres_custom_insert_expressions,
     )
 
     table.to(
@@ -119,6 +121,7 @@ def write_snapshot(
     table_name: str,
     primary_key: list[str],
     max_batch_size: int | None = None,
+    postgres_custom_insert_expressions: dict[str, str] | None = None,
 ) -> None:
     """Maintains a snapshot of a table within a Postgres table.
 
@@ -186,6 +189,7 @@ single transaction.
         key_field_names=primary_key,
         value_fields=_format_output_value_fields(table),
         table_name=table_name,
+        postgres_custom_insert_expressions=postgres_custom_insert_expressions,
     )
 
     table.to(

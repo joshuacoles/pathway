@@ -4716,8 +4716,11 @@ impl DataFormat {
                 Ok(settings.formatter())
             }
             "sql" => {
-                let formatter =
-                    PsqlUpdatesFormatter::new(self.table_name()?, self.value_field_names(py));
+                let formatter = PsqlUpdatesFormatter::new(
+                        self.table_name()?,
+                        self.value_field_names(py),
+                        self.postgres_custom_insert_expressions.clone()
+                );
                 Ok(Box::new(formatter))
             }
             "sql_snapshot" => {

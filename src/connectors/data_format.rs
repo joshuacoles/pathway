@@ -1509,13 +1509,15 @@ impl Parser for TransparentParser {
 pub struct PsqlUpdatesFormatter {
     table_name: String,
     value_field_names: Vec<String>,
+    custom_expressions: HashMap<String, String>,
 }
 
 impl PsqlUpdatesFormatter {
-    pub fn new(table_name: String, value_field_names: Vec<String>) -> PsqlUpdatesFormatter {
+    pub fn new(table_name: String, value_field_names: Vec<String>, custom_expressions: Option<HashMap<String, String>>) -> PsqlUpdatesFormatter {
         PsqlUpdatesFormatter {
             table_name,
             value_field_names,
+            custom_expressions: custom_expressions.unwrap_or_default(),
         }
     }
 }
@@ -1533,12 +1535,23 @@ impl Formatter for PsqlUpdatesFormatter {
         }
 
         let mut result = Vec::new();
+
+        let insert_values = (1..=values.len())
+            .format_with(",", |x, f| {
+                if let Some(custom_expression) = self.custom_expressions.get(&self.value_field_names[x - 1]) {
+                    let substituted = custom_expression.replace("$?", &format!("${}", x));
+                    f(&substituted)
+                } else {
+                    f(&format_args!("${x}"))
+                }
+            });
+
         writeln!(
             result,
             "INSERT INTO {} ({},time,diff) VALUES ({},{},{})",
             self.table_name,
             self.value_field_names.iter().join(","),
-            (1..=values.len()).format_with(",", |x, f| f(&format_args!("${x}"))),
+            insert_values,
             time,
             diff
         )
