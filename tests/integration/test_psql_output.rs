@@ -8,6 +8,7 @@ fn test_psql_columns_mismatch() -> eyre::Result<()> {
     let mut formatter = PsqlUpdatesFormatter::new(
         "table_name".to_string(),
         vec!["b".to_string(), "c".to_string(), "d".to_string()],
+        None,
     );
 
     let result = formatter.format(
@@ -30,6 +31,7 @@ fn test_psql_format_strings() -> eyre::Result<()> {
     let mut formatter = PsqlUpdatesFormatter::new(
         "table_name".to_string(),
         vec!["b".to_string(), "c".to_string()],
+        None,
     );
 
     let result = formatter.format(
@@ -49,8 +51,11 @@ fn test_psql_format_strings() -> eyre::Result<()> {
 
 #[test]
 fn test_psql_format_null() -> eyre::Result<()> {
-    let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+    let mut formatter = PsqlUpdatesFormatter::new(
+        "table_name".to_string(),
+        vec!["column".to_string()],
+        None,
+    );
 
     {
         let result = formatter.format(
@@ -72,7 +77,7 @@ fn test_psql_format_null() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_bool() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
@@ -107,7 +112,7 @@ fn test_psql_format_bool() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_int() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
@@ -155,7 +160,7 @@ fn test_psql_format_int() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_floats() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
@@ -177,7 +182,7 @@ fn test_psql_format_floats() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_pointers() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let key = pathway_engine::engine::Key(1);
@@ -201,7 +206,7 @@ fn test_psql_format_pointers() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_tuple() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let value1 = Value::Bool(true);
@@ -229,7 +234,7 @@ fn test_psql_format_tuple() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_date_time_naive() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
@@ -281,7 +286,7 @@ fn test_psql_format_date_time_naive() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_date_time_utc() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
@@ -329,7 +334,7 @@ fn test_psql_format_date_time_utc() -> eyre::Result<()> {
 #[test]
 fn test_psql_format_duration() -> eyre::Result<()> {
     let mut formatter =
-        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()]);
+        PsqlUpdatesFormatter::new("table_name".to_string(), vec!["column".to_string()], None);
 
     {
         let result = formatter.format(
