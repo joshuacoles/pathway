@@ -1585,6 +1585,8 @@ pub struct PsqlSnapshotFormatter {
 
     key_field_positions: Vec<usize>,
     value_field_positions: Vec<usize>,
+
+    // TODO: Replace with casts for a more limited surface area
     custom_expressions: HashMap<String, String>,
 }
 
@@ -1647,7 +1649,9 @@ impl Formatter for PsqlSnapshotFormatter {
             .key_field_positions
             .iter()
             .map(|position| {
-                let rhs = if let Some(custom_expression) = self.custom_expressions.get(&self.key_field_names[*position]) {
+                let field_name = &self.value_field_names[*position];
+
+                let rhs = if let Some(custom_expression) = self.custom_expressions.get(field_name) {
                     custom_expression.replace("$?", &format!("${}", position + 1))
                 } else {
                     format!("${}", position + 1)
@@ -1656,7 +1660,7 @@ impl Formatter for PsqlSnapshotFormatter {
                 format!(
                     "{}.{}=${}",
                     self.table_name,
-                    self.value_field_names[*position],
+                    field_name,
                     rhs,
                 )
             })
