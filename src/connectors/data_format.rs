@@ -1572,6 +1572,7 @@ pub struct PsqlSnapshotFormatter {
 
     key_field_positions: Vec<usize>,
     value_field_positions: Vec<usize>,
+    custom_expressions: HashMap<String, String>,
 }
 
 impl PsqlSnapshotFormatter {
@@ -1579,6 +1580,7 @@ impl PsqlSnapshotFormatter {
         table_name: String,
         mut key_field_names: Vec<String>,
         mut value_field_names: Vec<String>,
+        custom_expressions: Option<HashMap<String, String>>,
     ) -> Result<PsqlSnapshotFormatter, PsqlSnapshotFormatterError> {
         let mut field_positions = HashMap::<String, usize>::new();
         for (index, field_name) in value_field_names.iter_mut().enumerate() {
@@ -1609,6 +1611,7 @@ impl PsqlSnapshotFormatter {
 
             key_field_positions,
             value_field_positions,
+            custom_expressions: custom_expressions.unwrap_or_default(),
         })
     }
 }
@@ -1646,7 +1649,6 @@ impl Formatter for PsqlSnapshotFormatter {
             .map(|field_name| format!("{field_name}=excluded.{field_name}"))
             .join(",");
 
-        let custom_expressions: HashMap<String, String> = HashMap::new();
         let insert_values = (1..=values.len())
             .format_with(",", |x, f| {
                 if let Some(custom_expression) = self.custom_expressions.get(&self.value_field_names[x - 1]) {
