@@ -119,7 +119,7 @@ fn test_sqlite_read_table_with_custom_sql() -> eyre::Result<()> {
                     HashMap::from([
                         ("id".to_owned(), Value::Int(1)),
                         ("new_name".to_owned(), Value::String("Milk".into())),
-                        ("twice_price".to_owned(), Value::Float((2 * 1.1).into())),
+                        ("twice_price".to_owned(), Value::Float((2.0 * 1.1).into())),
                         ("photo".to_owned(), Value::None)
                     ])
                     .into(),
@@ -133,7 +133,7 @@ fn test_sqlite_read_table_with_custom_sql() -> eyre::Result<()> {
                     HashMap::from([
                         ("id".to_owned(), Value::Int(2)),
                         ("new_name".to_owned(), Value::String("Bread".into())),
-                        ("twice_price".to_owned(), Value::Float((2 * 0.75).into())),
+                        ("twice_price".to_owned(), Value::Float((2.0 * 0.75).into())),
                         ("photo".to_owned(), Value::Bytes(Arc::new([0, 0])))
                     ])
                     .into(),
