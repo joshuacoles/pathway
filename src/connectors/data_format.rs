@@ -1649,8 +1649,9 @@ impl Formatter for PsqlSnapshotFormatter {
         let custom_expressions: HashMap<String, String> = HashMap::new();
         let insert_values = (1..=values.len())
             .format_with(",", |x, f| {
-                if let Some(custom_expression) = custom_expressions.get(&self.value_field_names[x - 1]) {
-                    f(custom_expression)
+                if let Some(custom_expression) = self.custom_expressions.get(&self.value_field_names[x - 1]) {
+                    let substituted = custom_expression.replace("$?", &format!("${}", x));
+                    f(&substituted)
                 } else {
                     f(&format_args!("${x}"))
                 }
