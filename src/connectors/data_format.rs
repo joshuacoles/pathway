@@ -1641,31 +1641,36 @@ impl Formatter for PsqlSnapshotFormatter {
             .join(" AND ");
 
         let update_pairs = self
-            .value_field_positions
+            .value_field_names
             .iter()
-            .map(|position| format!("{}=${}", self.value_field_names[*position], *position + 1))
+            .map(|field_name| format!("{field_name}=excluded.{field_name}"))
             .join(",");
+
+        let custom_expressions: HashMap<String, String> = HashMap::new();
+        let insert_values = (1..=values.len())
+            .format_with(",", |x, f| {
+                if let Some(custom_expression) = custom_expressions.get(&self.value_field_names[x - 1]) {
+                    f(custom_expression)
+                } else {
+                    f(&format_args!("${x}"))
+                }
+            });
 
         writeln!(
             result,
-            "INSERT INTO {} ({},time,diff) VALUES ({},{},{}) ON CONFLICT ({}) DO UPDATE SET {},time={},diff={} WHERE {} AND ({}.time<{} OR ({}.time={} AND {}.diff=-1))",
-            self.table_name,  // INSERT INTO ...
-            self.value_field_names.iter().format(","),  // (...
-            (1..=values.len()).format_with(",", |x, f| f(&format_args!("${x}"))),  // VALUES(...
-            time,  // VALUES(..., time
-            diff,  // VALUES(..., time, diff
-            self.key_field_names.iter().join(","),  // ON CONFLICT(...
-            update_pairs,  // DO UPDATE SET ...
-            time,
-            diff,
-            update_condition,  // WHERE ...
-            self.table_name,  // AND ...time
-            time,  // .time < ...
-            self.table_name,  // OR (...time
-            time,  // .time=...
-            self.table_name,  // AND ...diff=-1))
-        )
-        .unwrap();
+            "INSERT INTO {table} ({insert_columns}, time, diff)\
+            VALUES ({insert_values}, {time}, {diff})\
+            ON CONFLICT DO UPDATE SET {on_conflict_update}, time={time}, diff={diff}
+            WHERE {update_condition} AND ({table}.time<{time} OR ({table}.time={time} AND {table}.diff=-1))
+            ",
+            table=self.table_name,
+            insert_columns=self.value_field_names.iter().join(","),
+            insert_values=insert_values,
+            time=time,
+            diff=diff,
+            on_conflict_update=update_pairs,
+            update_condition=update_condition,
+        ).unwrap();
 
         Ok(FormatterContext::new_single_payload(
             result,
