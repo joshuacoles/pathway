@@ -1653,7 +1653,7 @@ impl Formatter for PsqlSnapshotFormatter {
                 };
 
                 format!(
-                    "{}.{}=${}",
+                    "{}.{}={}",
                     self.table_name,
                     field_name,
                     rhs,
