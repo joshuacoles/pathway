@@ -1816,6 +1816,38 @@ impl Writer for PsqlWriter {
         if self.buffer.is_empty() {
             return Ok(());
         }
+
+        const BASE_DELAY: u64 = 500;
+        const MAX_RETRIES: usize = 5;
+
+        let mut retry_count = 0;
+        let mut delay = BASE_DELAY;
+
+        loop {
+            match self.attempt_flush() {
+                Ok(_) => return Ok(()),
+                Err(e) if retry_count < MAX_RETRIES => {
+                    retry_count += 1;
+                    let jitter = rand::thread_rng().gen_range(0..=100);
+                    let backoff = Duration::from_millis(delay + jitter);
+
+                    log::warn!("Flush attempt {} failed: {}. Retrying in {:?}", retry_count, e, backoff);
+
+                    thread::sleep(backoff);
+                    delay *= 2; // Exponential backoff
+                }
+                Err(e) => return Err(e),
+            }
+        }
+    }
+
+    fn single_threaded(&self) -> bool {
+        self.snapshot_mode
+    }
+}
+
+impl PsqlWriter {
+    fn attempt_flush(&mut self) -> Result<(), WriteError> {
         let mut transaction = self.client.transaction()?;
 
         for data in self.buffer.drain(..) {
@@ -1840,10 +1872,6 @@ impl Writer for PsqlWriter {
         transaction.commit()?;
 
         Ok(())
-    }
-
-    fn single_threaded(&self) -> bool {
-        self.snapshot_mode
     }
 }
 
